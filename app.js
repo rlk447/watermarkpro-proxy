@@ -20,20 +20,24 @@ function forward(path, body) {
       headers: {
         'Content-Type':   'application/json',
         'Content-Length': Buffer.byteLength(data),
-        'User-Agent':     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36',
-        'Accept':         'application/json'
+        'User-Agent':     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept':         'application/json, text/plain, */*',
+        'Origin':         TARGET,
+        'Referer':        TARGET + '/',
+        'X-Requested-With': 'XMLHttpRequest'
       },
       rejectUnauthorized: false
     }, res => {
       let raw = ''
       res.on('data', d => raw += d)
       res.on('end', () => {
+        console.log('[proxy]', path, '| status:', res.statusCode, '| resposta:', raw.substring(0, 150))
         try { resolve(JSON.parse(raw)) }
         catch { reject(new Error('Resposta inválida: ' + raw.slice(0, 200))) }
       })
     })
     req.on('error', reject)
-    req.setTimeout(15000, () => { req.destroy(); reject(new Error('Timeout')) })
+    req.setTimeout(20000, () => { req.destroy(); reject(new Error('Timeout')) })
     req.write(data)
     req.end()
   })
